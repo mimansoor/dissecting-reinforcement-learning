@@ -41,6 +41,7 @@ class GridWorld:
         #self.transition_array = np.ones(self.action_space_size) / self.action_space_size
         self.reward_matrix = np.zeros((tot_row, tot_col))
         self.state_matrix = np.zeros((tot_row, tot_col))
+        self.index_matrix = None
         self.position = [np.random.randint(tot_row), np.random.randint(tot_col)]
 
     #def setTransitionArray(self, transition_array):
@@ -95,6 +96,16 @@ class GridWorld:
             raise ValueError('The shape of the matrix does not match with the shape of the world.')
         self.state_matrix = state_matrix
 
+    def setIndexMatrix(self, index_matrix):
+        '''Set the indeces of the states in the world.
+
+        The input to the function is a matrix with the
+        same size of the world 
+        '''
+        #if(index_matrix != self.index_matrix.shape):
+        #    raise ValueError('The shape of the matrix does not match with the shape of the world.')
+        self.index_matrix = index_matrix
+
     def setPosition(self, index_row=None, index_col=None):
         ''' Set the position of the robot in a specific state.
 
@@ -121,7 +132,7 @@ class GridWorld:
                     elif(self.state_matrix[row, col] == +1): row_string += ' * '
             row_string += '\n'
             graph += row_string 
-        print (graph)            
+        print graph            
 
     def reset(self, exploring_starts=False):
         ''' Set the position of the robot in the bottom left corner.
@@ -136,8 +147,12 @@ class GridWorld:
             self.position = [row, col]
         else:
             self.position = [self.world_row-1, 0]
-        #reward = self.reward_matrix[self.position[0], self.position[1]]
-        return self.position
+        #Check which kind of index to return
+        if self.index_matrix is not None:
+            indexed_position = [self.index_matrix[self.position[0],self.position[1],0], self.index_matrix[self.position[0],self.position[1],1]]
+            return indexed_position
+        else:
+            return self.position
 
     def step(self, action):
         ''' One step in the world.
@@ -174,5 +189,9 @@ class GridWorld:
         reward = self.reward_matrix[self.position[0], self.position[1]]
         #Done is True if the state is a terminal state
         done = bool(self.state_matrix[self.position[0], self.position[1]])
-        return self.position, reward, done
+        if self.index_matrix is not None:
+            indexed_position = [self.index_matrix[self.position[0],self.position[1],0], self.index_matrix[self.position[0],self.position[1],1]]
+            return indexed_position, reward, done
+        else:
+            return self.position, reward, done
 
